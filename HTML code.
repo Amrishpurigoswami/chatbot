@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Literacy Program - DigiMitra</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/babel-standalone@6.26.0/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #fef3e2; /* Warm saffron background */
+      color: #333;
+    }
+    .indian-motif {
+      background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGd3jdSlBOH9ty0qfwWZxi9212dl1GoahsPA&s'); /* Indian cultural image */
+      background-size: cover;
+      background-position: center;
+    }
+    .header-title {
+       /* Black title color: #000000;*/
+      font-size: 2.25rem; /* Matches text-4xl */
+      font-weight: bold;
+    }
+    .header-subtitle {
+      
+      font-size: 1.25rem; /* Matches text-xl color: #000000; /* Black subtitle */*/
+      margin-top: 0.5rem;
+    }
+    .chatbot-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 350px;
+      background: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+    .chatbot-minimized {
+      width: 60px;
+      height: 60px;
+      background: #ff9933; /* Saffron */
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .chatbot-header {
+      background: #ff9933; /* Saffron */
+      color: white;
+      padding: 10px;
+      border-radius: 10px 10px 0 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chatbot-messages {
+      height: 300px;
+      overflow-y: auto;
+      padding: 10px;
+      font-size: 1.1rem;
+    }
+    .chatbot-input {
+      display: flex;
+      border-top: 1px solid #ddd;
+    }
+    .chatbot-input input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+    }
+    .chatbot-input button {
+      padding: 10px;
+      background: #138808; /* Green */
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .quick-buttons button {
+      background: #ff9933;
+      color: white;
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .minimize-btn, .close-btn {
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const responses = {
+      en: {
+        greeting: "Namaste! I'm DigiMitra, your digital companion. Let's explore this amazing digital world together!",
+        browser: "A browser is like a magic door to the internet! It’s a program (like Google Chrome or Firefox) where you type a website’s address (like www.google.com) to visit it. To use it, open the browser on your phone or computer, type the address in the bar at the top, and press Enter!",
+        email: "An email is like sending a letter, but instantly, across the world! To set up an email account: 1. Open Gmail or another email app. 2. Click 'Create Account'. 3. Enter your name, choose a username (like yourname@gmail.com), and set a password. 4. Follow the steps to verify your phone number. Now you can send emails to your family!",
+        upi: "UPI is like a digital wallet for quick payments! To pay bills online: 1. Download a UPI app like Google Pay or PhonePe. 2. Link your bank account. 3. Choose 'Pay Bills', select your bill (like electricity or mobile), enter the amount, and confirm with your PIN. Always check the recipient’s details to stay safe!",
+        wifi: "Wi-Fi troubles? Don’t worry, I’ve got the 'mantra' to fix it! Try these: 1. Turn Wi-Fi off and on in your phone’s settings. 2. Check if the Wi-Fi password is correct. 3. Restart your router by unplugging it for 30 seconds. Still stuck? Let me know more!",
+        app_not_opening: "App not opening? Let’s fix it like a pro! 1. Restart your phone. 2. Check if your phone has enough storage (Settings > Storage). 3. Update the app in the Play Store or App Store. If it’s still not working, try uninstalling and reinstalling the app.",
+        safety: "Online safety is like locking your home! Never share passwords or personal details. Watch out for messages asking for money or OTPs – they might be scams. Use strong passwords, like mixing your favorite ‘ladoo’ name with numbers (e.g., Ladoo1234).",
+        tutorial_whatsapp: "Using WhatsApp is like chatting over chai! 1. Download WhatsApp from the Play Store or App Store. 2. Verify your phone number. 3. Find your family in Contacts, tap their name, and send a message or make a video call. Keep it simple and enjoy staying connected!",
+        motivation: "Learning is a lifelong journey, like a beautiful 'yatra' (pilgrimage). You’re doing amazing!"
+      },
+      hi: {
+        greeting: "नमस्ते! मैं डिजीमित्र, आपका डिजिटल साथी हूँ। आइए, इस अद्भुत डिजिटल दुनिया को एक साथ खोजें!",
+        browser: "ब्राउज़र इंटरनेट का जादुई दरवाजा है! यह एक प्रोग्राम है (जैसे गूगल क्रोम या फ़ायरफ़ॉक्स) जहाँ आप वेबसाइट का पता (जैसे www.google.com) टाइप करते हैं। इसे इस्तेमाल करने के लिए, अपने फोन या कंप्यूटर पर ब्राउज़र खोलें, ऊपर की बार में पता टाइप करें, और Enter दबाएँ!",
+        email: "ईमेल एक तुरंत भेजा जाने वाला पत्र है, जो पूरी दुनिया में जाता है! खाता बनाने के लिए: 1. Gmail या दूसरा ईमेल ऐप खोलें। 2. 'खाता बनाएँ' पर क्लिक करें। 3. अपना नाम डालें, एक उपयोगकर्ता नाम चुनें (जैसे yourname@gmail.com), और पासवर्ड सेट करें। 4. फोन नंबर सत्यापित करें। अब आप परिवार को ईमेल भेज सकते हैं!",
+        upi: "UPI एक डिजिटल वॉलेट की तरह है! बिल भुगतान के लिए: 1. Google Pay या PhonePe जैसे UPI ऐप डाउनलोड करें। 2. अपने बैंक खाते को लिंक करें। 3. 'बिल भुगतान' चुनें, बिल (जैसे बिजली या मोबाइल) चुनें, राशि डालें, और अपने PIN से पुष्टि करें। हमेशा प्राप्तकर्ता के विवरण की जाँच करें!",
+        wifi: "Wi-Fi में परेशानी? चिंता न करें, मेरे पास इसका 'मंत्र' है! 1. फोन की सेटिंग में Wi-Fi को बंद और चालू करें। 2. Wi-Fi पासवर्ड की जाँच करें। 3. राउटर को 30 सेकंड के लिए अनप्लग करके पुनः शुरू करें। अभी भी अटक गए? मुझे और बताएँ!",
+        app_not_opening: "ऐप नहीं खुल रहा? चलो इसे प्रो की तरह ठीक करें! 1. फोन को रीस्टार्ट करें। 2. स्टोरेज की जाँच करें (सेटिंग्स > स्टोरेज)। 3. Play Store या App Store से ऐप अपडेट करें। अगर फिर भी नहीं चलता, ऐप को अनइंस्टॉल करके फिर से इंस्टॉल करें।",
+        safety: "ऑनलाइन सुरक्षा घर को ताला लगाने जैसी है! पासवर्ड या निजी जानकारी कभी साझा न करें। पैसे या OTP माँगने वाले संदेशों से सछावधान रहें – ये घोटाले हो सकते हैं। मजबूत पासवर्ड बनाएँ, जैसे अपनी पसंदीदा 'लड्डू' के नाम के साथ नंबर (जैसे Ladoo1234)।",
+        tutorial_whatsapp: "व्हाट्सएप का उपयोग चाय पर गपशप करने जैसा है! 1. Play Store या App Store से व्हाट्सएप डाउनलोड करें। 2. अपने फोन नंबर को सत्यापित करें। 3. संपर्कों में अपने परिवार को ढूँढें, उनके नाम पर टैप करें, और संदेश भेजें या वीडियो कॉल करें। सरल रखें और जुड़े रहें!",
+        motivation: "सीखना एक आजीवन यात्रा है, जैसे एक सुंदर 'यात्रा'। आप शानदार कर रहे हैं!"
+      }
+    };
+
+    const App = () => {
+      const [messages, setMessages] = useState([{ sender: 'bot', text: responses.en.greeting }]);
+      const [input, setInput] = useState('');
+      const [language, setLanguage] = useState('en');
+      const [isListening, setIsListening] = useState(false);
+      const [isMinimized, setIsMinimized] = useState(false);
+
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+
+      const speak = (text) => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+        window.speechSynthesis.speak(utterance);
+      };
+
+      const handleInput = () => {
+        if (!input.trim()) return;
+        setMessages([...messages, { sender: 'user', text: input }]);
+        const response = processInput(input.toLowerCase());
+        setMessages((prev) => [...prev, { sender: 'bot', text: response }]);
+        speak(response);
+        setInput('');
+      };
+
+      const processInput = (input) => {
+        const lang = responses[language];
+        if (input.includes('browser')) return lang.browser;
+        if (input.includes('email')) return lang.email;
+        if (input.includes('upi') || input.includes('pay bills')) return lang.upi;
+        if (input.includes('wifi') || input.includes('wi-fi')) return lang.wifi;
+        if (input.includes('app not opening')) return lang.app_not_opening;
+        if (input.includes('safety') || input.includes('scam')) return lang.safety;
+        if (input.includes('whatsapp')) return lang.tutorial_whatsapp;
+        return lang.motivation;
+      };
+
+      const handleQuickButton = (query) => {
+        setMessages([...messages, { sender: 'user', text: query }]);
+        const response = processInput(query.toLowerCase());
+        setMessages((prev) => [...prev, { sender: 'bot', text: response }]);
+        speak(response);
+      };
+
+      const startListening = () => {
+        setIsListening(true);
+        recognition.start();
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          setInput(transcript);
+          handleInput();
+          setIsListening(false);
+        };
+        recognition.onend = () => setIsListening(false);
+      };
+
+      const toggleMinimize = () => {
+        setIsMinimized(!isMinimized);
+      };
+
+      return (
+        <div>
+          {/* Header */}
+          <header className="indian-motif py-10 text-center">
+            <h1 className="header-title">Digital Literacy Program</h1>
+            <p className="header-subtitle">Empowering Parents & Elders with DigiMitra</p>
+          </header>
+
+          {/* Main Content */}
+          <div className="container mx-auto p-6">
+            <section className="mb-10">
+              <h2 className="text-3xl font-bold text-center text-[#138808]">Welcome to Your Digital Yatra</h2>
+              <p className="text-lg mt-4 text-center">
+                Join DigiMitra, your digital friend, to explore the internet with ease and confidence. Learn to connect, pay bills, and stay safe online – all with a touch of Indian warmth!
+              </p>
+            </section>
+
+            <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-2xl font-bold text-[#ff9933]">Quick Tech Tips for Parents</h3>
+                <p className="mt-2">Learn how to manage your kids’ digital lives with simple guides on safe apps, screen time, and more.</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h3 className="text-2xl font-bold text-[#ff9933]">Digital Basics for Elders</h3>
+                <p className="mt-2">From WhatsApp to online payments, we make technology as simple as brewing chai!</p>
+              </div>
+            </section>
+
+            <section className="mt-10">
+              <h2 className="text-3xl font-bold text-center text-[#138808]">Gyan Kendra: Our Digital Heroes</h2>
+              <p className="text-lg mt-4 text-center">
+                Read inspiring stories of elders embracing technology, from video calls with grandkids to online shopping!
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div className="bg-white p-4 rounded-lg shadow-lg">
+                  <h4 className="text-xl font-bold">Aaji’s First Video Call</h4>
+                  <p>Learn how 70-year-old Shanta Aaji connected with her family abroad using WhatsApp!</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-lg">
+                  <h4 className="text-xl font-bold">Ramesh Uncle’s UPI Success</h4>
+                  <p>Discover how Ramesh Uncle paid his bills online with confidence.</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-lg">
+                  <h4 className="text-xl font-bold">Online Safety Pathshala</h4>
+                  <p>Tips to stay safe from scams and protect your information online.</p>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* Chatbot */}
+          {isMinimized ? (
+            <div className="chatbot-minimized" onClick={toggleMinimize}>
+              <span role="img" aria-label="DigiMitra Icon">🤖</span>
+            </div>
+          ) : (
+            <div className="chatbot-container">
+              <div className="chatbot-header">
+                <span>DigiMitra</span>
+                <div>
+                  <span className="minimize-btn" onClick={toggleMinimize}>–</span>
+                  <span className="close-btn" onClick={toggleMinimize}>✖</span>
+                </div>
+              </div>
+              <div className="chatbot-messages">
+                {messages.map((msg, index) => (
+                  <div key={index} className={msg.sender === 'bot' ? 'text-left p-2' : 'text-right p-2 text-[#138808]'}>
+                    {msg.text}
+                  </div>
+                ))}
+              </div>
+              <div className="quick-buttons flex flex-wrap justify-center">
+                <button onClick={() => handleQuickButton('What is a browser?')}>Digital Basics</button>
+                <button onClick={() => handleQuickButton('How to use WhatsApp?')}>Tutorials</button>
+                <button onClick={() => handleQuickButton('Wi-Fi not working')}>Get Help</button>
+                <button onClick={() => handleQuickButton('Online safety')}>Safety Tips</button>
+              </div>
+              <div className="chatbot-input">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleInput()}
+                  placeholder="Ask DigiMitra..."
+                />
+                <button onClick={startListening} disabled={isListening}>
+                  {isListening ? '🎙️ Listening...' : '🎙️ Speak'}
+                </button>
+              </div>
+              <div className="p-2">
+                <select onChange={(e) => setLanguage(e.target.value)} value={language} className="w-full p-2 rounded">
+                  <option value="en">English</option>
+                  <option value="hi">हिन्दी</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
